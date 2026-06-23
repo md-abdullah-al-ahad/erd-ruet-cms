@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RUET CMS — ER Diagram</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #f8f9fa;
+    font-family: system-ui, sans-serif;
+    padding: 2rem;
+  }
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+  }
+  #erd {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: block;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #erd svg.erDiagram {
+    background: #ffffff;
+    max-width: none;
+    width: auto;
+    height: auto;
+  }
+  #erd svg.erDiagram .er.entityBox path,
+  #erd svg.erDiagram .er.entityBox rect {
+    fill: #f1f5f9 !important;
+    stroke: #4f46e5 !important;
+    stroke-width: 1.5px !important;
+  }
+  #erd svg.erDiagram .er.entityLabel {
+    fill: #1e293b !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+  }
+  #erd svg.erDiagram .er.attributeBoxEven rect,
+  #erd svg.erDiagram .er.attributeBoxEven path,
+  #erd svg.erDiagram .er.attributeBoxOdd rect,
+  #erd svg.erDiagram .er.attributeBoxOdd path {
+    fill: #ffffff !important;
+    stroke: #e2e8f0 !important;
+    stroke-width: 0.5px !important;
+  }
+  #erd svg.erDiagram .er.attributeBoxEven text,
+  #erd svg.erDiagram .er.attributeBoxOdd text {
+    fill: #334155 !important;
+    font-size: 12px !important;
+  }
+  #erd svg.erDiagram .er.relationshipLabelBox rect {
+    fill: #eef2ff !important;
+    stroke: #c7d2fe !important;
+  }
+  #erd svg.erDiagram .er.relationshipLabel text {
+    fill: #4338ca !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+  }
+  #erd svg.erDiagram .er.relationshipLine {
+    stroke: #6366f1 !important;
+    stroke-width: 1.5px !important;
+  }
+  #erd svg.erDiagram .divider path {
+    stroke: #cbd5e1 !important;
+    stroke-opacity: 1 !important;
+  }
+  #erd svg.erDiagram .er.entityBox {
+    cursor: default;
+  }
+  .legend {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.6;
+  }
+  .legend code {
+    background: #f1f5f9;
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    font-size: 0.85em;
+    color: #475569;
+  }
+</style>
+</head>
+<body>
+
+<h1>RUET CMS — Database ER Diagram</h1>
+<div id="erd"></div>
+<div class="legend">
+  <code>PK</code> = Primary Key &nbsp;·&nbsp; <code>UK</code> = Unique Key &nbsp;·&nbsp; <code>FK</code> = Foreign Key<br />
+  <code>||</code> = one &nbsp;·&nbsp; <code>o|</code> = zero or one &nbsp;·&nbsp; <code>o{</code> = zero or many &nbsp;·&nbsp; <code>|{</code> = one or many
+</div>
+
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+
+await document.fonts.ready;
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: 'system-ui, sans-serif',
+  themeVariables: {
+    fontSize: '13px',
+    fontFamily: 'system-ui, sans-serif',
+    primaryColor: '#f1f5f9',
+    primaryBorderColor: '#4f46e5',
+    primaryTextColor: '#1e293b',
+    lineColor: '#6366f1',
+    textColor: '#334155',
+    secondaryColor: '#ffffff',
+    tertiaryColor: '#eef2ff',
+  },
+});
+
+const src = `erDiagram
+  USER ||--o{ SESSION : has
+  USER ||--o{ ACCOUNT : has
+  USER ||--o| STUDENT_PROFILE : has
+  USER ||--o| TEACHER_PROFILE : has
+  DEPARTMENT ||--o{ COURSE_CATALOG : offers
+  DEPARTMENT ||--o{ DEPARTMENT_INTAKE : has
+  COURSE_CATALOG ||--o{ COURSE : has
+  TEACHER_PROFILE ||--o{ COURSE_TEACHER : teaches
+  COURSE ||--o{ COURSE_TEACHER : assigned
+  STUDENT_PROFILE ||--o{ ENROLLMENT : enrolls
+  COURSE ||--o{ ENROLLMENT : has
+  ENROLLMENT ||--o| ASSESSMENT : scored
+  COURSE ||--o{ ATTENDANCE_SESSION : has
+  TEACHER_PROFILE ||--o{ ATTENDANCE_SESSION : creates
+  ATTENDANCE_SESSION ||--o{ ATTENDANCE_ABSENCE : records
+  STUDENT_PROFILE ||--o{ ATTENDANCE_ABSENCE : has
+
+  USER {
+    string id PK
+    string name
+    string email UK
+    boolean emailVerified
+    Role role
+    UserStatus status
+    string phone
+  }
+  SESSION {
+    string id PK
+    string token UK
+    string userId FK
+    datetime expiresAt
+  }
+  ACCOUNT {
+    string id PK
+    string userId FK
+    string providerId
+    string accountId
+    string password
+  }
+  VERIFICATION {
+    string id PK
+    string identifier
+    string value
+    datetime expiresAt
+  }
+  EMAIL_QUEUE {
+    string id PK
+    string to
+    string subject
+    EmailQueueStatus status
+    int attempts
+  }
+  DEPARTMENT {
+    string id PK
+    string name UK
+    string slug UK
+  }
+  COURSE_CATALOG {
+    string id PK
+    string departmentId FK
+    string code UK
+    string title
+    float credit
+  }
+  DEPARTMENT_INTAKE {
+    string id PK
+    string departmentId FK
+    int series
+    int capacity
+    string rollPrefix
+    string rollStart
+  }
+  STUDENT_PROFILE {
+    string id PK
+    string userId FK
+    string studentNo UK
+    int series
+    string dept
+    int batch
+  }
+  TEACHER_PROFILE {
+    string id PK
+    string userId FK
+    string initials
+    string name
+    string dept
+    string phone
+  }
+  COURSE {
+    string id PK
+    string courseCatalogId FK
+    int series
+    YearLevel yearLevel
+    SemesterType semester
+    int totalClasses
+  }
+  COURSE_TEACHER {
+    string courseId FK
+    string teacherProfileId FK
+    datetime assignedAt
+  }
+  ENROLLMENT {
+    string id PK
+    string studentProfileId FK
+    string courseId FK
+    datetime enrolledAt
+  }
+  ASSESSMENT {
+    string id PK
+    string enrollmentId FK
+    float classTest1
+    float classTest2
+    float classTest3
+    float classTest4
+    float assignment
+    float attendance
+    float classTestTotal20
+    float totalCA40
+  }
+  ATTENDANCE_SESSION {
+    string id PK
+    string courseId FK
+    string createdByTeacherId FK
+    datetime sessionDate
+    int classNo
+  }
+  ATTENDANCE_ABSENCE {
+    string sessionId FK
+    string studentProfileId FK
+    AttendanceStatus status
+  }`;
+
+const { svg } = await mermaid.render('erd-svg', src);
+document.getElementById('erd').innerHTML = svg;
+
+// Fix rounded corners on entity boxes — replace the bounding path with a rect
+document.querySelectorAll('#erd svg.erDiagram .er.entityBox').forEach(box => {
+  const firstPath = box.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+</script>
+</body>
+</html>
